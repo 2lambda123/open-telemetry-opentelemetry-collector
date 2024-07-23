@@ -54,6 +54,7 @@ config:
   properties:
     timeout:
       type: string
+      format: duration
       default: "P200MS"
       description: 
     send_batch_size:
@@ -62,13 +63,17 @@ config:
       default: 8192
       description: 
     send_batch_max_size:
-      type: number
+      type: integer
+      minimum: 0
+      default: 0
       description: 
     metadata_keys:
-      type: string
+      type: array
+      items:
+        type: string
       description: 
     metadata_cardinality_limit:
-      type: number
-      format: duration
+      type: integer
+      minimum: 0
       default: 1000
       description: 
