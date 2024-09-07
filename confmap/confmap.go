@@ -17,7 +17,15 @@ import (
 	"github.com/knadh/koanf/v2"
 
 	encoder "go.opentelemetry.io/collector/confmap/internal/mapstructure"
+	"go.opentelemetry.io/collector/featuregate"
 )
+
+const MergeComponentsAppendID = "confmap.MergeComponentsAppend"
+
+var MergeComponentsAppend = featuregate.GlobalRegistry().MustRegister(MergeComponentsAppendID,
+	featuregate.StageAlpha,
+	featuregate.WithRegisterFromVersion("v0.109.0"),
+	featuregate.WithRegisterDescription("Overrides default koanf merging strategy and combines slices."))
 
 const (
 	// KeyDelimiter is used as the default key delimiter in the default koanf instance.
@@ -159,8 +167,23 @@ func (l *Conf) IsSet(key string) bool {
 
 // Merge merges the input given configuration into the existing config.
 // Note that the given map may be modified.
+
 func (l *Conf) Merge(in *Conf) error {
+	if MergeComponentsAppend.IsEnabled() {
+		return l.mergeWithFunc(in, mergeComponentsAppend)
+	}
+	return l.merge(in)
+}
+
+func (l *Conf) merge(in *Conf) error {
 	return l.k.Merge(in.k)
+}
+
+// MergeWithFunc merges the input given configuration into the existing config.
+// Note that the given map may be modified.
+func (l *Conf) mergeWithFunc(in *Conf, mergeFunc MergeFunc) error {
+	// Currently, custom merge functions are supported only via koanf.Load
+	return l.k.Load(confmap.Provider(in.ToStringMap(), ""), nil, koanf.WithMergeFunc(mergeFunc))
 }
 
 // Sub returns new Conf instance representing a sub-config of this instance.
