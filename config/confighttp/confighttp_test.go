@@ -745,7 +745,7 @@ func TestHttpReception(t *testing.T) {
 				client.Transport = &http2.Transport{
 					AllowHTTP: true,
 					// Pretend we are dialing a TLS endpoint. (Note, we ignore the passed tls.Config)
-					DialTLS: func(netw, addr string, cfg *tls.Config) (net.Conn, error) {
+					DialTLS: func(netw, addr string, _ *tls.Config) (net.Conn, error) {
 						return net.Dial(netw, addr)
 					},
 				}
