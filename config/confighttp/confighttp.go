@@ -349,7 +349,7 @@ func NewDefaultServerConfig() ServerConfig {
 		WriteTimeout:      30 * time.Second,
 		ReadHeaderTimeout: 1 * time.Minute,
 		IdleTimeout:       1 * time.Minute,
-		AllowH2CUpgrade:   true,
+		AllowH2CUpgrade:   false,
 	}
 }
 
@@ -430,6 +430,7 @@ func (hss *ServerConfig) ToServer(_ context.Context, host component.Host, settin
 	}
 
 	if hss.AllowH2CUpgrade {
+		settings.Logger.Warn("H2C Upgrade is enabled, this is not recommended for production environments")
 		h2s := &http2.Server{IdleTimeout: 0}
 		handler = h2c.NewHandler(handler, h2s)
 	}
