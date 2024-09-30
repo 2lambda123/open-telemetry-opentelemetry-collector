@@ -198,12 +198,10 @@ func TestGraphStartStopCycle(t *testing.T) {
 	pg.componentGraph.SetEdge(simple.Edge{F: c1, T: p1}) // loop back
 
 	err := pg.StartAll(context.Background(), &Host{Reporter: status.NewReporter(func(*componentstatus.InstanceID, *componentstatus.Event) {}, func(error) {})})
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), `topo: no topological ordering: cyclic components`)
+	require.ErrorContains(t, err, `topo: no topological ordering: cyclic components`)
 
 	err = pg.ShutdownAll(context.Background(), statustest.NewNopStatusReporter())
-	require.Error(t, err)
-	assert.Contains(t, err.Error(), `topo: no topological ordering: cyclic components`)
+	assert.ErrorContains(t, err, `topo: no topological ordering: cyclic components`)
 }
 
 func TestGraphStartStopComponentError(t *testing.T) {
@@ -3056,15 +3054,15 @@ func newErrReceiverFactory() receiver.Factory {
 }
 
 func newErrProcessorFactory() processor.Factory {
-	return processor.NewFactory(component.MustNewType("err"),
+	return processorprofiles.NewFactory(component.MustNewType("err"),
 		func() component.Config { return &struct{}{} },
-		processor.WithTraces(func(context.Context, processor.Settings, component.Config, consumer.Traces) (processor.Traces, error) {
+		processorprofiles.WithTraces(func(context.Context, processor.Settings, component.Config, consumer.Traces) (processor.Traces, error) {
 			return &errComponent{}, nil
 		}, component.StabilityLevelUndefined),
-		processor.WithLogs(func(context.Context, processor.Settings, component.Config, consumer.Logs) (processor.Logs, error) {
+		processorprofiles.WithLogs(func(context.Context, processor.Settings, component.Config, consumer.Logs) (processor.Logs, error) {
 			return &errComponent{}, nil
 		}, component.StabilityLevelUndefined),
-		processor.WithMetrics(func(context.Context, processor.Settings, component.Config, consumer.Metrics) (processor.Metrics, error) {
+		processorprofiles.WithMetrics(func(context.Context, processor.Settings, component.Config, consumer.Metrics) (processor.Metrics, error) {
 			return &errComponent{}, nil
 		}, component.StabilityLevelUndefined),
 		processorprofiles.WithProfiles(func(context.Context, processor.Settings, component.Config, consumerprofiles.Profiles) (processorprofiles.Profiles, error) {
@@ -3074,15 +3072,15 @@ func newErrProcessorFactory() processor.Factory {
 }
 
 func newErrExporterFactory() exporter.Factory {
-	return exporter.NewFactory(component.MustNewType("err"),
+	return exporterprofiles.NewFactory(component.MustNewType("err"),
 		func() component.Config { return &struct{}{} },
-		exporter.WithTraces(func(context.Context, exporter.Settings, component.Config) (exporter.Traces, error) {
+		exporterprofiles.WithTraces(func(context.Context, exporter.Settings, component.Config) (exporter.Traces, error) {
 			return &errComponent{}, nil
 		}, component.StabilityLevelUndefined),
-		exporter.WithLogs(func(context.Context, exporter.Settings, component.Config) (exporter.Logs, error) {
+		exporterprofiles.WithLogs(func(context.Context, exporter.Settings, component.Config) (exporter.Logs, error) {
 			return &errComponent{}, nil
 		}, component.StabilityLevelUndefined),
-		exporter.WithMetrics(func(context.Context, exporter.Settings, component.Config) (exporter.Metrics, error) {
+		exporterprofiles.WithMetrics(func(context.Context, exporter.Settings, component.Config) (exporter.Metrics, error) {
 			return &errComponent{}, nil
 		}, component.StabilityLevelUndefined),
 		exporterprofiles.WithProfiles(func(context.Context, exporter.Settings, component.Config) (exporterprofiles.Profiles, error) {
