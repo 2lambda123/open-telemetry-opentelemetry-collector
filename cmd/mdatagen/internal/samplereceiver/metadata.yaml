@@ -169,6 +169,7 @@ telemetry:
       sum:
         value_type: int
         monotonic: true
+      attributes: [string_attr, overridden_int_attr, enum_attr, boolean_attr]
     request_duration:
       enabled: true
       stability:
@@ -178,6 +179,7 @@ telemetry:
       histogram:
         value_type: double
         bucket_boundaries: [1, 10, 100]
+      attributes: [overridden_int_attr]
     process_runtime_total_alloc_bytes:
       enabled: true
       stability:
@@ -188,6 +190,7 @@ telemetry:
         async: true
         value_type: int
         monotonic: true
+      attributes: [string_attr, overridden_int_attr, enum_attr]
     queue_length:
       enabled: true
       description: This metric is optional and therefore not initialized in NewTelemetryBuilder.
