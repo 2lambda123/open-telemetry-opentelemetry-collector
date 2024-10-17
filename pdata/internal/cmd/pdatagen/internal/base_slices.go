@@ -44,22 +44,31 @@ func (ss *sliceOfPtrs) generateTests(packageInfo *PackageInfo) []byte {
 }
 
 func (ss *sliceOfPtrs) templateFields(packageInfo *PackageInfo) map[string]any {
+	orig := origAccessor(ss.packageName)
+	state := stateAccessor(ss.packageName)
 	return map[string]any{
 		"type":               "sliceOfPtrs",
+		"isCommon":           usedByOtherDataTypes(ss.packageName),
 		"structName":         ss.structName,
 		"elementName":        ss.element.structName,
 		"originName":         ss.element.originFullName,
 		"originElementType":  "*" + ss.element.originFullName,
 		"emptyOriginElement": "&" + ss.element.originFullName + "{}",
-		"newElement":         "new" + ss.element.structName + "((*es.orig)[i], es.state)",
+		"newElement":         "new" + ss.element.structName + "((*es." + orig + ")[i], es." + state + ")",
+		"origAccessor":       orig,
+		"stateAccessor":      state,
 		"packageName":        packageInfo.name,
 		"imports":            packageInfo.imports,
 		"testImports":        packageInfo.testImports,
 	}
 }
 
-func (ss *sliceOfPtrs) generateInternal(*PackageInfo) []byte {
-	return nil
+func (ss *sliceOfPtrs) generateInternal(packageInfo *PackageInfo) []byte {
+	var sb bytes.Buffer
+	if err := sliceInternalTemplate.Execute(&sb, ss.templateFields(packageInfo)); err != nil {
+		panic(err)
+	}
+	return sb.Bytes()
 }
 
 var _ baseStruct = (*sliceOfPtrs)(nil)
@@ -104,14 +113,20 @@ func (ss *sliceOfValues) templateFields(packageInfo *PackageInfo) map[string]any
 		"originElementType":  ss.element.originFullName,
 		"emptyOriginElement": ss.element.originFullName + "{}",
 		"newElement":         "new" + ss.element.structName + "(&(*es.orig)[i], es.state)",
+		"origAccessor":       origAccessor(ss.packageName),
+		"stateAccessor":      stateAccessor(ss.packageName),
 		"packageName":        packageInfo.name,
 		"imports":            packageInfo.imports,
 		"testImports":        packageInfo.testImports,
 	}
 }
 
-func (ss *sliceOfValues) generateInternal(*PackageInfo) []byte {
-	return nil
+func (ss *sliceOfValues) generateInternal(packageInfo *PackageInfo) []byte {
+	var sb bytes.Buffer
+	if err := sliceInternalTemplate.Execute(&sb, ss.templateFields(packageInfo)); err != nil {
+		panic(err)
+	}
+	return sb.Bytes()
 }
 
 var _ baseStruct = (*sliceOfValues)(nil)
